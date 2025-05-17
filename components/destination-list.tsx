@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Heart, Star, Search, Globe, Plane, Calendar, Users, Landmark } from "lucide-react"
+import { Heart, Star, Search, Globe, Plane, Calendar, Users, Landmark, Clock } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
 
 type Region = "all" | "europe" | "asia" | "americas" | "africa" | "oceania"
 
@@ -113,6 +114,45 @@ const destinations: Destination[] = [
   },
 ]
 
+// Helper function to get weather icon based on region
+const getWeatherIcon = (region: string) => {
+  // Simple mapping based on region - in real app, would use actual weather data
+  switch(region) {
+    case "europe": return "🌦️";
+    case "asia": return "☀️";
+    case "americas": return "🌤️";
+    case "africa": return "☀️";
+    case "oceania": return "🌊";
+    default: return "☁️";
+  }
+};
+
+// Helper function to calculate local time in each destination
+const getLocalTime = (city: string) => {
+  const now = new Date();
+  
+  // Simple time zone offsets (in hours) - in real app would use proper timezone API
+  const timeOffsets: {[key: string]: number} = {
+    "Tokyo": 9,
+    "Paris": 1,
+    "New York": -5,
+    "Cape Town": 2,
+    "Sydney": 11,
+    "Barcelona": 1,
+    "Bangkok": 7,
+    "Rio de Janeiro": -3,
+  };
+  
+  const cityOffset = timeOffsets[city] || 0;
+  const localTime = new Date(now.getTime() + (cityOffset * 60 * 60 * 1000));
+  
+  return localTime.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    hour12: false 
+  });
+};
+
 export default function DestinationList() {
   const [activeRegion, setActiveRegion] = useState<Region>("all")
   const [searchQuery, setSearchQuery] = useState("")
@@ -211,48 +251,91 @@ export default function DestinationList() {
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.3 }}
               layout
+              className="group"
+              style={{ 
+                transformStyle: 'preserve-3d', 
+                perspective: '1000px' 
+              }}
             >
-              <Card className="overflow-hidden h-full flex flex-col">
+              <Card 
+                className="overflow-hidden h-full flex flex-col bg-white dark:bg-slate-800 border-[8px] border-white dark:border-slate-700 shadow-lg" 
+                style={{ 
+                  transform: `rotate(${Math.random() * 3 - 1.5}deg)`,
+                  transformStyle: 'preserve-3d'
+                }}
+              >
+                {/* Postcard header */}
+                <div className="flex justify-between items-center p-3 border-b">
+                  <div className="flex items-center gap-1">
+                    <Badge variant="outline" className="flex items-center gap-1 font-normal">
+                      <span>{destination.emoji}</span> {destination.country}
+                    </Badge>
+                    <Badge variant="secondary" className="ml-2">
+                      {getWeatherIcon(destination.region)}
+                    </Badge>
+                  </div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Now: {getLocalTime(destination.name)} local
+                  </div>
+                </div>
+
+                {/* Image with overlays */}
                 <div className="relative">
                   <img
                     src={destination.imageUrl || "/placeholder.svg"}
                     alt={destination.name}
                     className="w-full h-48 object-cover"
                   />
+                  
+                  {/* Greetings text overlay */}
+                  <div className="absolute top-4 left-0 right-0 text-center">
+                    <div className="inline-block bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-3 py-1 rounded-md rotate-[-2deg] shadow-sm">
+                      <p className="text-lg font-medium" style={{ fontFamily: 'cursive' }}>
+                        Greetings from {destination.name}!
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Stamp */}
+                  <div className="absolute top-2 right-2 h-16 w-16 border-2 border-red-500 rounded-md flex items-center justify-center overflow-hidden rotate-12 bg-white/30 backdrop-blur-sm">
+                    <div className="text-center text-red-500">
+                      <div className="text-xs font-bold">POSTCARD</div>
+                      <div className="text-xs">{new Date().getFullYear()}</div>
+                    </div>
+                  </div>
+
+                  {/* Favorite button */}
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => toggleFavorite(destination.id)}
-                    className="absolute top-2 right-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-full h-8 w-8"
+                    className="absolute bottom-2 right-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-full h-8 w-8"
                   >
                     <Heart
                       className={`h-5 w-5 ${destination.favorite ? "fill-red-500 text-red-500" : "text-slate-600 dark:text-slate-300"}`}
                     />
                   </Button>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">{destination.emoji}</span>
-                      <div>
-                        <h3 className="font-bold text-white">{destination.name}</h3>
-                        <p className="text-white/80 text-sm">{destination.country}</p>
-                      </div>
+                </div>
+
+                {/* Postcard content */}
+                <CardContent className="pt-4 pb-2 flex-grow">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-bold text-lg">{destination.name}</h3>
+                    <div className="flex items-center text-amber-500">
+                      <span className="mr-1 text-sm font-medium">{destination.rating.toFixed(1)}</span>
+                      <Star className="h-4 w-4 fill-current" />
                     </div>
                   </div>
-                </div>
-                <CardContent className="py-4 flex-grow">
+                  
                   <p className="text-sm text-muted-foreground">{destination.description}</p>
-                  <div className="flex items-center mt-4 text-amber-500">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${i < Math.floor(destination.rating) ? "fill-current" : "fill-muted stroke-muted-foreground"}`}
-                      />
-                    ))}
-                    <span className="ml-2 text-sm font-medium">{destination.rating.toFixed(1)}</span>
-                  </div>
                 </CardContent>
-                <CardFooter className="pt-0">
-                  <Button className="w-full gap-2" onClick={() => handleExplore(destination)}>
+                
+                <CardFooter className="pt-0 pb-4">
+                  <Button 
+                    className="w-full gap-2 bg-[#9e2761] hover:bg-[#9e2761]/90" 
+                    onClick={() => handleExplore(destination)}
+                  >
                     <Plane className="h-4 w-4" />
                     Explore
                   </Button>
