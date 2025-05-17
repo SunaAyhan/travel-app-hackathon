@@ -515,7 +515,7 @@ const ThreeScene = () => {
               mainText.parentNode.removeChild(mainText);
             }
           }, 500);
-        }, 1500); // Additional delay before showing welcome box
+        }, 1000); // Additional delay before showing welcome box
         
       }, 3000); // Wait for animations to complete
     }, (revolutionDuration + 1) * 1000);
