@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Heart, Star, Search, Globe, Plane } from "lucide-react"
+import { Heart, Star, Search, Globe, Plane, Calendar, Users, Landmark } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 
 type Region = "all" | "europe" | "asia" | "americas" | "africa" | "oceania"
 
@@ -117,10 +118,17 @@ export default function DestinationList() {
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredDestinations, setFilteredDestinations] = useState<Destination[]>(destinations)
   const [listedDestinations, setListedDestinations] = useState<Destination[]>(destinations)
+  const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null)
+  const [showDialog, setShowDialog] = useState(false)
 
   const toggleFavorite = (id: string) => {
     const updated = listedDestinations.map((dest) => (dest.id === id ? { ...dest, favorite: !dest.favorite } : dest))
     setListedDestinations(updated)
+  }
+
+  const handleExplore = (destination: Destination) => {
+    setSelectedDestination(destination)
+    setShowDialog(true)
   }
 
   useEffect(() => {
@@ -244,7 +252,7 @@ export default function DestinationList() {
                   </div>
                 </CardContent>
                 <CardFooter className="pt-0">
-                  <Button className="w-full gap-2">
+                  <Button className="w-full gap-2" onClick={() => handleExplore(destination)}>
                     <Plane className="h-4 w-4" />
                     Explore
                   </Button>
@@ -261,6 +269,122 @@ export default function DestinationList() {
           <h3 className="text-lg font-medium">No destinations found</h3>
           <p className="text-muted-foreground">Try adjusting your search or filters</p>
         </div>
+      )}
+
+      {/* Destination Details Dialog */}
+      {selectedDestination && (
+        <Dialog open={showDialog} onOpenChange={setShowDialog}>
+          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl">
+                <span className="text-2xl">{selectedDestination.emoji}</span>
+                {selectedDestination.name}, {selectedDestination.country}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="mt-4">
+              <img 
+                src={selectedDestination.imageUrl} 
+                alt={selectedDestination.name}
+                className="w-full h-52 object-cover rounded-md mb-4" 
+              />
+              
+              <div className="space-y-4">
+                <p className="text-lg">{selectedDestination.description}</p>
+                
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div>
+                    <h4 className="font-medium text-sm text-muted-foreground">Region</h4>
+                    <p className="font-medium">{selectedDestination.region.charAt(0).toUpperCase() + selectedDestination.region.slice(1)}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium text-sm text-muted-foreground">Rating</h4>
+                    <div className="flex items-center text-amber-500">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${i < Math.floor(selectedDestination.rating) ? "fill-current" : "fill-muted stroke-muted-foreground"}`}
+                        />
+                      ))}
+                      <span className="ml-2 text-sm font-medium">{selectedDestination.rating.toFixed(1)}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="p-4 bg-muted rounded-md">
+                  <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Best Time to Visit
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedDestination.region === "europe" ? "Spring (April to June) and Fall (September to October)" : 
+                    selectedDestination.region === "asia" ? "Spring (March to May) and Fall (September to November)" :
+                    selectedDestination.region === "americas" ? "Varies by location, generally Spring or Fall" :
+                    selectedDestination.region === "africa" ? "Dry seasons: May to October (varies by region)" :
+                    "Summer (December to February)"}
+                  </p>
+                </div>
+
+                <div className="p-4 bg-muted rounded-md">
+                  <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <Landmark className="h-4 w-4" />
+                    Popular Attractions
+                  </h4>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-4">
+                    {selectedDestination.name === "Paris" ? (
+                      <>
+                        <li>Eiffel Tower</li>
+                        <li>Louvre Museum</li>
+                        <li>Notre-Dame Cathedral</li>
+                      </>
+                    ) : selectedDestination.name === "Tokyo" ? (
+                      <>
+                        <li>Tokyo Tower</li>
+                        <li>Shibuya Crossing</li>
+                        <li>Senso-ji Temple</li>
+                      </>
+                    ) : selectedDestination.name === "New York" ? (
+                      <>
+                        <li>Statue of Liberty</li>
+                        <li>Central Park</li>
+                        <li>Empire State Building</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>City Center</li>
+                        <li>Local Museums</li>
+                        <li>Natural Landmarks</li>
+                      </>
+                    )}
+                  </ul>
+                </div>
+                
+                <div className="p-4 bg-muted rounded-md">
+                  <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Local Tips
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedDestination.name === "Paris" ? "Try to visit major attractions early in the morning to avoid crowds. Purchase museum passes in advance." : 
+                    selectedDestination.name === "Tokyo" ? "Get a Suica/Pasmo card for easy public transportation. Convenience stores (konbini) are great for quick meals." :
+                    selectedDestination.name === "New York" ? "Use the subway to get around. Purchase a CityPASS if you plan to visit multiple attractions." :
+                    "Learn a few basic phrases in the local language and always respect local customs."}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button 
+                className="gap-2 bg-[#9e2761] hover:bg-[#9e2761]/90" 
+                onClick={() => setShowDialog(false)}
+              >
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   )

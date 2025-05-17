@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Backpack, Briefcase, Shirt, Umbrella, Utensils, Plus, X } from "lucide-react"
-import Image from "next/image"
 
 type Category = "essentials" | "clothing" | "toiletries" | "electronics" | "misc"
 
@@ -255,17 +254,13 @@ export default function PackingChecklist() {
         </div>
       )}
 
-      {/* Suitcase element that receives packed items */}
+      {/* Briefcase icon that receives packed items */}
       <div className="fixed bottom-10 right-10 z-50" ref={bagRef}>
         <div className="relative">
-          <Image
-            src="suitcase.png"
-            width={120}
-            height={120}
-            alt="Packing suitcase"
-            className="rounded-lg shadow-lg object-cover"
-          />
-          <div className="absolute -top-3 -right-3 bg-[#9e2761] text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+          <div className="bg-[#9e2761] text-white p-6 rounded-lg shadow-lg flex items-center justify-center">
+            <Briefcase className="h-14 w-14" />
+          </div>
+          <div className="absolute -top-3 -right-3 bg-[#9e2761] text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold border-2 border-white dark:border-slate-800">
             {packedCount}
           </div>
         </div>

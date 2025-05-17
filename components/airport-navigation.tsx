@@ -9,7 +9,15 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Plane, Search, Clock, Coffee, ShoppingBag, Utensils, Map, Info } from "lucide-react"
+import { Plane, Search, Clock, Coffee, ShoppingBag, Utensils, Map, Info, X } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose
+} from "@/components/ui/dialog"
 
 type Gate = {
   id: string
@@ -198,10 +206,26 @@ const statusColors = {
   Cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
 }
 
+type MapItem = {
+  id: string;
+  name: string;
+  location: string;
+  terminal: string;
+  type: "gate" | "amenity";
+}
+
 export default function AirportNavigation() {
   const [searchQuery, setSearchQuery] = useState("")
   const [terminalFilter, setTerminalFilter] = useState<string>("all")
   const [activeTab, setActiveTab] = useState<"gates" | "amenities">("gates")
+  const [isMapOpen, setIsMapOpen] = useState(false)
+  const [selectedMapItem, setSelectedMapItem] = useState<MapItem | null>(null)
+
+  // Function to handle showing an item on the map
+  const showOnMap = (item: MapItem) => {
+    setSelectedMapItem(item)
+    setIsMapOpen(true)
+  }
 
   const filteredGates = gates.filter((gate) => {
     // Filter by terminal
@@ -240,6 +264,13 @@ export default function AirportNavigation() {
 
     return true
   })
+
+  // Add a function to get related amenities for gates
+  const getNearbyAmenities = (terminal: string) => {
+    return amenities
+      .filter(amenity => amenity.terminal === terminal)
+      .slice(0, 3); // Just get up to 3 nearby amenities
+  };
 
   return (
     <div className="space-y-6">
@@ -349,7 +380,17 @@ export default function AirportNavigation() {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button variant="outline" className="w-full gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="w-full gap-2"
+                      onClick={() => showOnMap({
+                        id: gate.id,
+                        name: `Gate ${gate.number}`,
+                        location: `Terminal ${gate.terminal}`,
+                        terminal: gate.terminal,
+                        type: "gate"
+                      })}
+                    >
                       <Map className="h-4 w-4" />
                       Show on Map
                     </Button>
@@ -400,7 +441,17 @@ export default function AirportNavigation() {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button variant="outline" className="w-full gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="w-full gap-2"
+                      onClick={() => showOnMap({
+                        id: amenity.id,
+                        name: amenity.name,
+                        location: amenity.location,
+                        terminal: amenity.terminal,
+                        type: "amenity"
+                      })}
+                    >
                       <Map className="h-4 w-4" />
                       Show on Map
                     </Button>
@@ -419,6 +470,330 @@ export default function AirportNavigation() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Map Dialog */}
+      <Dialog open={isMapOpen} onOpenChange={setIsMapOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              {selectedMapItem?.type === "gate" ? (
+                <Plane className="h-5 w-5 text-indigo-500" />
+              ) : (
+                selectedMapItem?.type === "amenity" && 
+                (selectedMapItem?.name.toLowerCase().includes("café") || 
+                 selectedMapItem?.name.toLowerCase().includes("lounge") ? 
+                  <Coffee className="h-5 w-5 text-amber-500" /> : 
+                  selectedMapItem?.name.toLowerCase().includes("shop") || 
+                  selectedMapItem?.name.toLowerCase().includes("tech") ? 
+                    <ShoppingBag className="h-5 w-5 text-blue-500" /> : 
+                    <Utensils className="h-5 w-5 text-green-500" />
+                )
+              )}
+              {selectedMapItem?.name}
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              {selectedMapItem?.location}
+            </DialogDescription>
+            <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </DialogHeader>
+          
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+            <div className="md:col-span-2">
+              <div className="relative rounded-md border overflow-hidden h-[350px] bg-slate-100 dark:bg-slate-800">
+                {/* Enhanced airport map visualization */}
+                <div className="absolute inset-0">
+                  {/* Main terminal structure */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-[95%] h-[90%] relative bg-white/30 dark:bg-black/20 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-2">
+                      {/* Terminal outlines with more details */}
+                      <div className="absolute top-0 left-0 w-[30%] h-full border-2 border-gray-300 bg-slate-50/70 dark:bg-slate-700/70 rounded-lg overflow-hidden">
+                        <div className="h-8 bg-blue-500/20 border-b-2 border-gray-300 flex items-center justify-center">
+                          <div className="text-sm font-medium">Terminal 1</div>
+                        </div>
+                        
+                        {/* Gates layout */}
+                        <div className="flex flex-col h-[calc(100%-32px)]">
+                          <div className="border-b border-gray-300 p-1 text-xs text-center">Gates A1-A20</div>
+                          <div className="border-b border-gray-300 p-1 text-xs text-center">Gates B1-B15</div>
+                          <div className="p-1 text-xs text-center">Baggage Claim</div>
+                          
+                          {/* Shops and restaurants indicators */}
+                          <div className="absolute bottom-2 left-2 flex gap-1">
+                            <Coffee className="h-3 w-3 text-amber-500" />
+                            <ShoppingBag className="h-3 w-3 text-blue-500" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="absolute top-0 left-[35%] w-[30%] h-full border-2 border-gray-300 bg-slate-50/70 dark:bg-slate-700/70 rounded-lg overflow-hidden">
+                        <div className="h-8 bg-green-500/20 border-b-2 border-gray-300 flex items-center justify-center">
+                          <div className="text-sm font-medium">Terminal 2</div>
+                        </div>
+                        
+                        {/* Gates layout */}
+                        <div className="flex flex-col h-[calc(100%-32px)]">
+                          <div className="border-b border-gray-300 p-1 text-xs text-center">Gates C1-C25</div>
+                          <div className="border-b border-gray-300 p-1 text-xs text-center">Food Court</div>
+                          <div className="p-1 text-xs text-center">Security Check</div>
+                          
+                          {/* Shops and restaurants indicators */}
+                          <div className="absolute bottom-2 left-2 flex gap-1">
+                            <Utensils className="h-3 w-3 text-green-500" />
+                            <ShoppingBag className="h-3 w-3 text-blue-500" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="absolute top-0 right-0 w-[30%] h-full border-2 border-gray-300 bg-slate-50/70 dark:bg-slate-700/70 rounded-lg overflow-hidden">
+                        <div className="h-8 bg-purple-500/20 border-b-2 border-gray-300 flex items-center justify-center">
+                          <div className="text-sm font-medium">Terminal 3</div>
+                        </div>
+                        
+                        {/* Gates layout */}
+                        <div className="flex flex-col h-[calc(100%-32px)]">
+                          <div className="border-b border-gray-300 p-1 text-xs text-center">Gates D1-D18</div>
+                          <div className="border-b border-gray-300 p-1 text-xs text-center">Premium Lounges</div>
+                          <div className="p-1 text-xs text-center">Duty Free</div>
+                          
+                          {/* Shops and restaurants indicators */}
+                          <div className="absolute bottom-2 left-2 flex gap-1">
+                            <Coffee className="h-3 w-3 text-amber-500" />
+                            <Utensils className="h-3 w-3 text-green-500" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Central concourse/connection between terminals */}
+                      <div className="absolute top-[25%] left-[29%] w-[42%] h-[15%] bg-gray-200/70 dark:bg-gray-600/50 rounded border border-gray-300">
+                        <div className="text-xs font-medium text-center p-1">Main Concourse</div>
+                      </div>
+                      
+                      {/* Walking paths */}
+                      {selectedMapItem && (
+                        <>
+                          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                              <marker id="arrowhead" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto">
+                                <polygon points="0 0, 5 2.5, 0 5" fill="#ef4444" />
+                              </marker>
+                            </defs>
+                            <path 
+                              d={`M ${selectedMapItem.terminal === "1" ? "15%" : selectedMapItem.terminal === "2" ? "50%" : "85%"} 50% L 50% 50% L 50% 75%`} 
+                              stroke="#ef4444" 
+                              strokeWidth="2" 
+                              strokeDasharray="4" 
+                              fill="none"
+                              markerEnd="url(#arrowhead)" 
+                            />
+                          </svg>
+                        
+                          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 px-2 py-1 rounded-full text-xs border border-gray-300 dark:border-gray-600 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {selectedMapItem.type === "gate" 
+                              ? `${gates.find(g => g.id === selectedMapItem.id)?.walkingTime || 5} min walk` 
+                              : "5-10 min walk"}
+                          </div>
+                        </>
+                      )}
+                      
+                      {/* Highlight the selected terminal */}
+                      {selectedMapItem && (
+                        <motion.div 
+                          className={`absolute ${
+                            selectedMapItem.terminal === "1" ? "top-0 left-0 w-[30%]" : 
+                            selectedMapItem.terminal === "2" ? "top-0 left-[35%] w-[30%]" : 
+                            "top-0 right-0 w-[30%]"
+                          } h-full border-2 border-indigo-500 bg-indigo-100/30 dark:bg-indigo-900/20 rounded-lg overflow-hidden`}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          {/* Pulsing location marker */}
+                          <motion.div
+                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8"
+                            initial={{ scale: 1 }}
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{ repeat: Infinity, duration: 2 }}
+                          >
+                            <div className="relative">
+                              <div className="absolute -inset-1 bg-red-500 rounded-full opacity-30 animate-ping"></div>
+                              <div className="relative bg-red-500 rounded-full w-6 h-6 flex items-center justify-center">
+                                {selectedMapItem.type === "gate" ? (
+                                  <Plane className="h-3 w-3 text-white" />
+                                ) : (
+                                  selectedMapItem.name.toLowerCase().includes("café") || 
+                                  selectedMapItem.name.toLowerCase().includes("lounge") ? 
+                                  <Coffee className="h-3 w-3 text-white" /> : 
+                                  selectedMapItem.name.toLowerCase().includes("shop") || 
+                                  selectedMapItem.name.toLowerCase().includes("tech") ? 
+                                  <ShoppingBag className="h-3 w-3 text-white" /> : 
+                                  <Utensils className="h-3 w-3 text-white" />
+                                )}
+                              </div>
+                            </div>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Enhanced legend */}
+                  <div className="absolute bottom-2 left-2 bg-white/90 dark:bg-black/70 p-2 rounded-md text-xs border border-gray-200 dark:border-gray-700">
+                    <div className="font-medium mb-1">Legend</div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <span>Your Location</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Coffee className="h-3 w-3 text-amber-500" />
+                        <span>Café/Lounge</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <ShoppingBag className="h-3 w-3 text-blue-500" />
+                        <span>Shop</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Utensils className="h-3 w-3 text-green-500" />
+                        <span>Restaurant</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Current time */}
+                  <div className="absolute top-2 right-2 bg-white/90 dark:bg-black/70 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-700">
+                    {new Date().toLocaleTimeString()}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Additional information panel */}
+            <div className="space-y-3">
+              <Card>
+                <CardHeader className="py-3">
+                  <CardTitle className="text-base">Details</CardTitle>
+                </CardHeader>
+                <CardContent className="py-0">
+                  {selectedMapItem?.type === "gate" && (
+                    <div className="space-y-2 text-sm">
+                      {gates.filter(gate => gate.id === selectedMapItem.id).map(gate => (
+                        <div key={gate.id}>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Status</span>
+                            <Badge className={statusColors[gate.status]}>{gate.status}</Badge>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Airline</span>
+                            <span>{gate.airline}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Destination</span>
+                            <span>{gate.destination}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Departure</span>
+                            <span>{gate.departureTime}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Walking Time</span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {gate.walkingTime} min
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {selectedMapItem?.type === "amenity" && (
+                    <div className="space-y-2 text-sm">
+                      {amenities.filter(amenity => amenity.id === selectedMapItem.id).map(amenity => (
+                        <div key={amenity.id}>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Type</span>
+                            <Badge variant="outline">{amenity.type.charAt(0).toUpperCase() + amenity.type.slice(1)}</Badge>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Location</span>
+                            <span>{amenity.location}</span>
+                          </div>
+                          <div className="mt-1">
+                            <span className="text-muted-foreground">Description</span>
+                            <p>{amenity.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              
+              {/* Nearby section */}
+              {selectedMapItem && (
+                <Card>
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base">Nearby</CardTitle>
+                  </CardHeader>
+                  <CardContent className="py-0 pb-3">
+                    <div className="space-y-2">
+                      {getNearbyAmenities(selectedMapItem.terminal).map((nearbyAmenity) => (
+                        <Button 
+                          key={nearbyAmenity.id} 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full justify-start"
+                          onClick={() => showOnMap({
+                            id: nearbyAmenity.id,
+                            name: nearbyAmenity.name,
+                            location: nearbyAmenity.location,
+                            terminal: nearbyAmenity.terminal,
+                            type: "amenity"
+                          })}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            {nearbyAmenity.icon}
+                            <span className="truncate">{nearbyAmenity.name}</span>
+                          </div>
+                        </Button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {/* Navigation help */}
+              <Card>
+                <CardHeader className="py-3">
+                  <CardTitle className="text-base">Navigation Help</CardTitle>
+                </CardHeader>
+                <CardContent className="py-0 pb-3">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Follow the red dotted line to reach your destination.
+                      Look for digital signage throughout the terminal for additional guidance.
+                    </p>
+                    <Button className="w-full" size="sm">
+                      <span className="flex items-center gap-2 px-2 py-1">
+                        <Map className="h-4 w-4" /> 
+                        Start Navigation
+                      </span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+          
+          <div className="flex justify-end mt-4">
+            <Button variant="outline" onClick={() => setIsMapOpen(false)}>Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

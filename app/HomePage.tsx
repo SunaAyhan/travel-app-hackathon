@@ -23,7 +23,7 @@ const ThreeScene = () => {
       0.1,
       1000
     );
-    camera.position.z = 12;
+    camera.position.z = 15;
 
     const renderer = new THREE.WebGLRenderer({
       canvas: canvasRef.current,
@@ -453,22 +453,71 @@ const ThreeScene = () => {
 
     initLoadingAnimation();
 
+    // Use display:none instead of just opacity:0 to completely hide elements initially
     const hiddenElements = document.querySelectorAll<HTMLElement>(".hide-text");
     hiddenElements.forEach((el) => {
       el.style.opacity = "0";
+      el.style.display = "none"; // Completely hide the element initially
     });
 
-    const mainText = document.createElement("h1");
-    mainText.className = "main-txt";
-    mainText.textContent = "TravelBuddy";
+    // Create animated main text
+    const mainText = document.createElement("div");
+    mainText.className = "main-txt auto-animate";
+    
+    // Split text into characters and create animated elements for each
+    const titleText = "TravelBuddy";
+    titleText.split('').forEach((char, index) => {
+      const letterWrapper = document.createElement("div");
+      letterWrapper.className = "letter-wrapper";
+      
+      const letter = document.createElement("div");
+      letter.className = "letter";
+      letter.textContent = char;
+      letter.style.setProperty('--index', index.toString());
+      
+      const shadow = document.createElement("div");
+      shadow.className = "shadow";
+      shadow.textContent = char;
+      shadow.style.setProperty('--index', index.toString());
+      
+      letterWrapper.appendChild(letter);
+      letterWrapper.appendChild(shadow);
+      mainText.appendChild(letterWrapper);
+    });
+    
     document.body.appendChild(mainText);
 
     setTimeout(() => {
       loadingComplete = true;
-      hiddenElements.forEach((el) => {
-        el.style.opacity = "1";
-      });
-      mainText.style.opacity = "0";
+      
+      // Fade out the main text after animation completes
+      setTimeout(() => {
+        mainText.style.opacity = "0";
+        
+        // Delay showing the welcome box until after the main text fades
+        setTimeout(() => {
+          // First make elements display:block but still opacity:0
+          hiddenElements.forEach((el) => {
+            el.style.display = "block"; // Make the element part of the layout again
+            
+            // Force a reflow before changing opacity for proper transition
+            void el.offsetWidth;
+            
+            // Now transition to visible
+            setTimeout(() => {
+              el.style.opacity = "1";
+            }, 50);
+          });
+          
+          // Remove the main text from DOM
+          setTimeout(() => {
+            if (mainText.parentNode) {
+              mainText.parentNode.removeChild(mainText);
+            }
+          }, 500);
+        }, 1500); // Additional delay before showing welcome box
+        
+      }, 3000); // Wait for animations to complete
     }, (revolutionDuration + 1) * 1000);
 
     window.addEventListener("mousemove", onMouseMove);
