@@ -1,2 +1,2 @@
-# travel-app-hackathon
+# TravelApp
 

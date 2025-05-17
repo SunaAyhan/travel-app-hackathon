@@ -1,0 +1,267 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Heart, Star, Search, Globe, Plane } from "lucide-react"
+
+type Region = "all" | "europe" | "asia" | "americas" | "africa" | "oceania"
+
+type Destination = {
+  id: string
+  name: string
+  country: string
+  region: Exclude<Region, "all">
+  emoji: string
+  description: string
+  rating: number
+  imageUrl: string
+  favorite: boolean
+}
+
+const destinations: Destination[] = [
+  {
+    id: "1",
+    name: "Paris",
+    country: "France",
+    region: "europe",
+    emoji: "🇫🇷",
+    description: "The City of Light with iconic landmarks like the Eiffel Tower and Louvre Museum.",
+    rating: 4.7,
+    imageUrl: "https://plus.unsplash.com/premium_photo-1661919210043-fd847a58522d?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    favorite: false,
+  },
+  {
+    id: "2",
+    name: "Tokyo",
+    country: "Japan",
+    region: "asia",
+    emoji: "🇯🇵",
+    description: "A fascinating blend of ultramodern and traditional, from neon-lit skyscrapers to historic temples.",
+    rating: 4.9,
+    imageUrl: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=2988&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    favorite: false,
+  },
+  {
+    id: "3",
+    name: "New York",
+    country: "USA",
+    region: "americas",
+    emoji: "🇺🇸",
+    description: "The Big Apple offers world-class dining, shopping, and entertainment options.",
+    rating: 4.6,
+    imageUrl: "https://images.unsplash.com/photo-1499092346589-b9b6be3e94b2?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    favorite: false,
+  },
+  {
+    id: "4",
+    name: "Cape Town",
+    country: "South Africa",
+    region: "africa",
+    emoji: "🇿🇦",
+    description: "A stunning coastal city with Table Mountain as its backdrop.",
+    rating: 4.5,
+    imageUrl: "https://images.unsplash.com/photo-1496497243327-9dccd845c35f?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGNhcGUlMjB0b3dufGVufDB8fDB8fHww",
+    favorite: false,
+  },
+  {
+    id: "5",
+    name: "Sydney",
+    country: "Australia",
+    region: "oceania",
+    emoji: "🇦🇺",
+    description: "Famous for its harbourfront Opera House, beautiful beaches, and vibrant culture.",
+    rating: 4.8,
+    imageUrl: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?q=80&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    favorite: false,
+  },
+  {
+    id: "6",
+    name: "Barcelona",
+    country: "Spain",
+    region: "europe",
+    emoji: "🇪🇸",
+    description: "Known for its art and architecture, including Gaudí's Sagrada Família.",
+    rating: 4.6,
+    imageUrl: "https://images.unsplash.com/photo-1583422409516-2895a77efded?q=80&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    favorite: false,
+  },
+  {
+    id: "7",
+    name: "Bangkok",
+    country: "Thailand",
+    region: "asia",
+    emoji: "🇹🇭",
+    description: "A city of contrasts with ornate shrines and vibrant street life.",
+    rating: 4.4,
+    imageUrl: "https://images.unsplash.com/photo-1694824995159-2093477bc337?q=80&w=1548&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    favorite: false,
+  },
+  {
+    id: "8",
+    name: "Rio de Janeiro",
+    country: "Brazil",
+    region: "americas",
+    emoji: "🇧🇷",
+    description: "Famous for its Copacabana beach, Christ the Redeemer statue, and annual carnival.",
+    rating: 4.5,
+    imageUrl: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?q=80&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    favorite: false,
+  },
+]
+
+export default function DestinationList() {
+  const [activeRegion, setActiveRegion] = useState<Region>("all")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filteredDestinations, setFilteredDestinations] = useState<Destination[]>(destinations)
+  const [listedDestinations, setListedDestinations] = useState<Destination[]>(destinations)
+
+  const toggleFavorite = (id: string) => {
+    const updated = listedDestinations.map((dest) => (dest.id === id ? { ...dest, favorite: !dest.favorite } : dest))
+    setListedDestinations(updated)
+  }
+
+  useEffect(() => {
+    let result = [...listedDestinations]
+
+    // Filter by region
+    if (activeRegion !== "all") {
+      result = result.filter((dest) => dest.region === activeRegion)
+    }
+
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(
+        (dest) =>
+          dest.name.toLowerCase().includes(query) ||
+          dest.country.toLowerCase().includes(query) ||
+          dest.description.toLowerCase().includes(query),
+      )
+    }
+
+    setFilteredDestinations(result)
+  }, [activeRegion, searchQuery, listedDestinations])
+
+  const regionEmojis = {
+    all: "🌎",
+    europe: "🇪🇺",
+    asia: "🌏",
+    americas: "🌎",
+    africa: "🌍",
+    oceania: "🏝️",
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row gap-4 md:items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Explore Destinations</h2>
+          <p className="text-muted-foreground">Discover amazing places around the world</p>
+        </div>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search destinations..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 bg-white dark:bg-slate-800 w-full md:w-[300px]"
+          />
+        </div>
+      </div>
+
+      <div className="flex overflow-x-auto pb-2 gap-2">
+        {(Object.keys(regionEmojis) as Region[]).map((region) => (
+          <motion.button
+            key={region}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setActiveRegion(region)}
+            className={`px-4 py-2 rounded-full flex items-center gap-2 whitespace-nowrap ${
+              activeRegion === region
+                ? "bg-[#9e2761] text-white"
+                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+            }`}
+          >
+            <span>{regionEmojis[region]}</span>
+            <span>{region.charAt(0).toUpperCase() + region.slice(1)}</span>
+          </motion.button>
+        ))}
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <AnimatePresence>
+          {filteredDestinations.map((destination) => (
+            <motion.div
+              key={destination.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+              layout
+            >
+              <Card className="overflow-hidden h-full flex flex-col">
+                <div className="relative">
+                  <img
+                    src={destination.imageUrl || "/placeholder.svg"}
+                    alt={destination.name}
+                    className="w-full h-48 object-cover"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => toggleFavorite(destination.id)}
+                    className="absolute top-2 right-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-full h-8 w-8"
+                  >
+                    <Heart
+                      className={`h-5 w-5 ${destination.favorite ? "fill-red-500 text-red-500" : "text-slate-600 dark:text-slate-300"}`}
+                    />
+                  </Button>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{destination.emoji}</span>
+                      <div>
+                        <h3 className="font-bold text-white">{destination.name}</h3>
+                        <p className="text-white/80 text-sm">{destination.country}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <CardContent className="py-4 flex-grow">
+                  <p className="text-sm text-muted-foreground">{destination.description}</p>
+                  <div className="flex items-center mt-4 text-amber-500">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${i < Math.floor(destination.rating) ? "fill-current" : "fill-muted stroke-muted-foreground"}`}
+                      />
+                    ))}
+                    <span className="ml-2 text-sm font-medium">{destination.rating.toFixed(1)}</span>
+                  </div>
+                </CardContent>
+                <CardFooter className="pt-0">
+                  <Button className="w-full gap-2">
+                    <Plane className="h-4 w-4" />
+                    Explore
+                  </Button>
+                </CardFooter>
+              </Card>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {filteredDestinations.length === 0 && (
+        <div className="text-center py-12">
+          <Globe className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium">No destinations found</h3>
+          <p className="text-muted-foreground">Try adjusting your search or filters</p>
+        </div>
+      )}
+    </div>
+  )
+}
