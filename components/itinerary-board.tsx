@@ -28,12 +28,13 @@ type DayPlan = {
   currentCapacity: number // Current used minutes
 }
 
+// Renk şemasını projede kullanılan ana renge göre güncelliyoruz
 const categoryColors = {
-  sightseeing: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300",
-  food: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300",
-  transportation: "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300",
-  accommodation: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/30 dark:text-purple-300",
-  other: "bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-900/30 dark:text-slate-300",
+  sightseeing: "bg-[#ecd8e1] text-[#9e2761] border-[#d6adbc] dark:bg-[#9e2761]/20 dark:text-[#f5d0de]",
+  food: "bg-[#f3e6bc] text-[#8a6c00] border-[#e1cc75] dark:bg-[#8a6c00]/20 dark:text-[#f3e6bc]",
+  transportation: "bg-[#d6e2f5] text-[#2c4e8a] border-[#a8c0e9] dark:bg-[#2c4e8a]/20 dark:text-[#d6e2f5]",
+  accommodation: "bg-[#e5d8f0] text-[#6a3494] border-[#c9b0dd] dark:bg-[#6a3494]/20 dark:text-[#e5d8f0]",
+  other: "bg-[#e0e0e0] text-[#505050] border-[#c5c5c5] dark:bg-[#505050]/20 dark:text-[#e0e0e0]",
 }
 
 // Duration estimate based on category (in minutes)
@@ -320,7 +321,7 @@ export default function ItineraryBoard() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Itinerary Puzzle</h2>
+        <h2 className="text-2xl font-bold text-[#9e2761]">Itinerary Puzzle</h2>
         <p className="text-muted-foreground">Drag activities to complete your perfect daily schedule</p>
       </div>
 
@@ -335,9 +336,9 @@ export default function ItineraryBoard() {
                   className="relative"
                 >
                   <motion.div
-                    className={`puzzle-day relative bg-white dark:bg-slate-800 border-2 ${
+                    className={`puzzle-day relative bg-white dark:bg-slate-900 border-2 ${
                       day.currentCapacity >= day.maxCapacity * 0.9
-                        ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                        ? "border-[#9e2761] bg-[#f8eaf0] dark:bg-[#9e2761]/10"
                         : "border-gray-300 dark:border-gray-700"
                     } rounded-xl overflow-hidden transition-all duration-300 shadow-md`}
                     animate={{
@@ -350,7 +351,7 @@ export default function ItineraryBoard() {
                       className={`
                         p-3 border-b-2 ${
                           day.currentCapacity >= day.maxCapacity * 0.9
-                            ? "border-green-300 bg-green-100 dark:border-green-700 dark:bg-green-900/30"
+                            ? "border-[#d6adbc] bg-[#f8eaf0] dark:border-[#9e2761]/50 dark:bg-[#9e2761]/20"
                             : "border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-slate-800/70"
                         }
                       `}
@@ -358,7 +359,7 @@ export default function ItineraryBoard() {
                       <div className="flex justify-between items-center">
                         <div>
                           <div className="flex items-center gap-2">
-                            <Calendar className="h-5 w-5 text-indigo-500" />
+                            <Calendar className="h-5 w-5 text-[#9e2761]" />
                             <h3 className="font-bold">Day {days.findIndex((d) => d.id === day.id) + 1}</h3>
                           </div>
                           <p className="text-sm text-muted-foreground">{day.date}</p>
@@ -368,7 +369,7 @@ export default function ItineraryBoard() {
                             {Math.floor((day.currentCapacity / day.maxCapacity) * 100)}% Filled
                           </span>
                           {day.currentCapacity >= day.maxCapacity * 0.9 && (
-                            <Check className="h-4 w-4 text-green-500" />
+                            <Check className="h-4 w-4 text-[#9e2761]" />
                           )}
                         </div>
                       </div>
@@ -378,8 +379,8 @@ export default function ItineraryBoard() {
                         <div 
                           className={`h-full ${
                             day.currentCapacity >= day.maxCapacity * 0.9
-                              ? "bg-green-500"
-                              : "bg-[#9e2761]"
+                              ? "bg-[#9e2761]"
+                              : "bg-[#c77a9e]"
                           }`}
                           style={{ width: `${(day.currentCapacity / day.maxCapacity) * 100}%` }}
                         ></div>
@@ -396,7 +397,7 @@ export default function ItineraryBoard() {
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
                               className={`puzzle-piece relative ${categoryColors[item.category]} border-2 rounded-lg p-3 cursor-move hover:shadow-md transition-shadow ${
-                                snapshot.isDragging ? "shadow-lg" : ""
+                                snapshot.isDragging ? "shadow-lg ring-2 ring-[#9e2761]/30" : ""
                               }`}
                             >
                               <div className="flex justify-between items-start">
@@ -416,8 +417,21 @@ export default function ItineraryBoard() {
                                 </div>
                               </div>
                               
-                              {/* Puzzle connectors for visual effect */}
-                              <div className="absolute top-1/2 -left-2 w-3 h-8 transform -translate-y-1/2 bg-white dark:bg-slate-800 border-2 border-r-0 rounded-l-full"></div>
+                              {/* Puzzle konektörleri - görsel efekt */}
+                              <div className="absolute top-1/2 -left-2 w-3 h-8 transform -translate-y-1/2 bg-white dark:bg-slate-900 border-2 border-r-0 rounded-l-full"></div>
+                              
+                              {/* Yeni konektör ekleniyor - sağ */}
+                              <div className="absolute top-1/2 -right-2 w-3 h-8 transform -translate-y-1/2 bg-white dark:bg-slate-900 border-2 border-l-0 rounded-r-full"></div>
+                              
+                              {/* Yeni konektör ekleniyor - üst */}
+                              {index === 0 && (
+                                <div className="absolute -top-2 left-1/4 w-8 h-4 bg-white dark:bg-slate-900 border-2 border-b-0 rounded-t-full"></div>
+                              )}
+                              
+                              {/* Yeni konektör ekleniyor - alt */}
+                              {index === day.items.length - 1 && (
+                                <div className="absolute -bottom-2 right-1/4 w-8 h-4 bg-white dark:bg-slate-900 border-2 border-t-0 rounded-b-full"></div>
+                              )}
                             </div>
                           )}
                         </Draggable>
@@ -425,22 +439,28 @@ export default function ItineraryBoard() {
                       {provided.placeholder}
                       
                       {day.items.length === 0 && (
-                        <div className="flex items-center justify-center h-32 border-2 border-dashed rounded-lg text-muted-foreground">
+                        <div className="flex items-center justify-center h-32 border-2 border-dashed border-[#d6adbc] dark:border-[#9e2761]/40 rounded-lg text-muted-foreground">
                           <p>Drag activities here</p>
                         </div>
                       )}
                     </div>
 
-                    {/* Puzzle connectors */}
-                    <div className="absolute -right-2 top-1/3 w-3 h-8 transform -translate-y-1/2 bg-white dark:bg-slate-800 border-2 border-l-0 rounded-r-full"></div>
-                    <div className="absolute -left-2 top-2/3 w-3 h-8 transform -translate-y-1/2 bg-white dark:bg-slate-800 border-2 border-r-0 rounded-l-full"></div>
+                    {/* Puzzle konektörleri */}
+                    <div className="absolute -right-2 top-1/3 w-3 h-8 transform -translate-y-1/2 bg-white dark:bg-slate-900 border-2 border-l-0 rounded-r-full"></div>
+                    <div className="absolute -left-2 top-2/3 w-3 h-8 transform -translate-y-1/2 bg-white dark:bg-slate-900 border-2 border-r-0 rounded-l-full"></div>
+                    
+                    {/* Yeni üst konektör */}
+                    <div className="absolute top-0 left-1/3 w-10 h-5 bg-white dark:bg-slate-900 border-2 border-b-0 rounded-t-full -translate-y-1/2"></div>
+                    
+                    {/* Yeni alt konektör */}
+                    <div className="absolute bottom-0 right-1/3 w-10 h-5 bg-white dark:bg-slate-900 border-2 border-t-0 rounded-b-full translate-y-1/2"></div>
                     
                     {/* Button to add new activity */}
                     <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/70">
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="w-full gap-2"
+                        className="w-full gap-2 border-[#9e2761] text-[#9e2761] hover:bg-[#f8eaf0] hover:text-[#9e2761]"
                         onClick={() => setNewItemDay(day.id)}
                       >
                         <Plus className="h-4 w-4" />
@@ -455,16 +475,54 @@ export default function ItineraryBoard() {
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
-                          className="absolute inset-0 bg-green-500/20 flex items-center justify-center"
+                          className="absolute inset-0 bg-[#9e2761]/20 flex items-center justify-center"
                         >
                           <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
+                            initial={{ scale: 0, rotate: -5 }}
+                            animate={{ scale: 1, rotate: 0 }}
                             exit={{ scale: 0 }}
                             transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                            className="bg-white rounded-full p-4 shadow-lg"
+                            className="bg-white dark:bg-slate-800 rounded-full p-4 shadow-lg"
                           >
-                            <Sparkles className="h-12 w-12 text-yellow-500" />
+                            <motion.div 
+                              animate={{ 
+                                scale: [1, 1.2, 1],
+                                rotate: [0, 5, -5, 0]
+                              }}
+                              transition={{ repeat: 1, duration: 0.6 }}
+                            >
+                              <Sparkles className="h-12 w-12 text-[#9e2761]" />
+                            </motion.div>
+                          </motion.div>
+                          
+                          {/* Konfeti efekti */}
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 pointer-events-none"
+                          >
+                            {Array.from({ length: 20 }).map((_, i) => (
+                              <motion.div
+                                key={i}
+                                initial={{ 
+                                  x: 0, 
+                                  y: 0,
+                                  opacity: 1 
+                                }}
+                                animate={{ 
+                                  x: Math.random() * 300 - 150, 
+                                  y: Math.random() * 300 - 150,
+                                  opacity: 0,
+                                  rotate: Math.random() * 360
+                                }}
+                                transition={{ duration: 1.5, delay: Math.random() * 0.2 }}
+                                className="absolute top-1/2 left-1/2 w-3 h-3 rounded-sm"
+                                style={{ 
+                                  backgroundColor: ['#9e2761', '#c77a9e', '#8a6c00', '#2c4e8a', '#6a3494'][Math.floor(Math.random() * 5)]
+                                }}
+                              />
+                            ))}
                           </motion.div>
                         </motion.div>
                       )}
@@ -485,13 +543,13 @@ export default function ItineraryBoard() {
           onClick={() => setNewItemDay(null)}
         >
           <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <CardHeader>
-              <CardTitle>Add New Activity</CardTitle>
+            <CardHeader className="border-b border-[#ecd8e1] bg-[#f8eaf0] dark:bg-[#9e2761]/10 dark:border-[#9e2761]/20">
+              <CardTitle className="text-[#9e2761]">Add New Activity</CardTitle>
               <CardDescription>
                 Day {days.findIndex((d) => d.id === newItemDay) + 1} - {days.find((d) => d.id === newItemDay)?.date}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-4">
               {validationError && (
                 <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-sm">
                   {validationError}
@@ -552,13 +610,13 @@ export default function ItineraryBoard() {
               </div>
               
               <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-4 w-4 text-[#9e2761]" />
                 <span>Estimated time: {formatDuration(categoryDurations[newItem.category])}</span>
               </div>
               
               {days.find(d => d.id === newItemDay) && (
                 <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
+                  <Clock className="h-4 w-4 text-[#9e2761]" />
                   <span>
                     Remaining day capacity: {formatDuration(
                       days.find(d => d.id === newItemDay)!.maxCapacity - 
@@ -568,7 +626,7 @@ export default function ItineraryBoard() {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="flex justify-between">
+            <CardFooter className="flex justify-between border-t border-[#ecd8e1] dark:border-[#9e2761]/20 pt-4">
               <Button variant="outline" onClick={() => setNewItemDay(null)}>
                 Cancel
               </Button>

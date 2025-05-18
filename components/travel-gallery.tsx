@@ -168,6 +168,35 @@ export default function TravelGallery() {
     const charSum = id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)
     return (charSum % 7) - 3 // Between -3 and 3 degrees
   }
+  
+  // New download function
+  const handleDownload = (photo: Photo) => {
+    const link = document.createElement('a');
+    link.href = photo.src;
+    link.download = `${photo.location.replace(/,\s*/g, '-')}-${photo.date.replace(/,\s*/g, '-')}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // New share function
+  const handleShare = async (photo: Photo) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `My trip to ${photo.location}`,
+          text: photo.memoryTag || `Check out this photo from my trip to ${photo.location}!`,
+          url: photo.src
+        });
+      } catch (error) {
+        console.error("Error sharing:", error);
+      }
+    } else {
+      // Fallback for browsers that don't support the Web Share API
+      navigator.clipboard.writeText(photo.src);
+      alert("Image URL copied to clipboard!");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -359,10 +388,24 @@ export default function TravelGallery() {
                     >
                       <Heart className={`h-4 w-4 ${selectedPhoto.liked ? "fill-red-500 text-red-500" : ""}`} />
                     </Button>
-                    <Button variant="outline" size="icon">
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDownload(selectedPhoto)
+                      }}
+                    >
                       <Download className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon">
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleShare(selectedPhoto)
+                      }}
+                    >
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </div>
