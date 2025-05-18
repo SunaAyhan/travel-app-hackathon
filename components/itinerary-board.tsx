@@ -322,7 +322,6 @@ export default function ItineraryBoard() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-[#9e2761]">Itinerary Puzzle</h2>
-        <p className="text-muted-foreground">Drag activities to complete your perfect daily schedule</p>
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
