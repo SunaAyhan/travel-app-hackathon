@@ -60,18 +60,20 @@ export default function PackingChecklist() {
   const [flyingItems, setFlyingItems] = useState<FlyingItem[]>([])
 
   const bagRef = useRef<HTMLDivElement>(null)
+  
+  // Define explicit list of categories for reliable mapping
+  const categories: Category[] = ["essentials", "clothing", "toiletries", "electronics", "misc"]
 
   const addItem = () => {
     if (newItem.trim()) {
-      setItems([
-        ...items,
-        {
-          id: Date.now().toString(),
-          name: newItem,
-          packed: false,
-          category: newCategory,
-        },
-      ])
+      const newItemObj = {
+        id: Date.now().toString(),
+        name: newItem.trim(),
+        packed: false,
+        category: newCategory,
+      }
+      // Use functional update pattern for more reliable state updates
+      setItems(prevItems => [...prevItems, newItemObj])
       setNewItem("")
     }
   }
@@ -129,7 +131,7 @@ export default function PackingChecklist() {
             All
           </motion.button>
 
-          {(Object.keys(categoryIcons) as Category[]).map((category) => (
+          {categories.map((category) => (
             <motion.button
               key={category}
               whileHover={{ scale: 1.05 }}
@@ -175,7 +177,12 @@ export default function PackingChecklist() {
           placeholder="Add new item..."
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addItem()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault()
+              addItem()
+            }
+          }}
           className="bg-white dark:bg-slate-800"
         />
         <select
@@ -183,13 +190,13 @@ export default function PackingChecklist() {
           onChange={(e) => setNewCategory(e.target.value as Category)}
           className="px-3 py-2 rounded-md border border-input bg-white dark:bg-slate-800 text-sm"
         >
-          {(Object.keys(categoryIcons) as Category[]).map((category) => (
+          {categories.map((category) => (
             <option key={category} value={category}>
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </option>
           ))}
         </select>
-        <Button onClick={addItem}>
+        <Button onClick={addItem} type="button">
           <Plus className="h-4 w-4 mr-2" />
           Add
         </Button>
