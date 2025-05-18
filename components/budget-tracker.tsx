@@ -85,14 +85,14 @@ export default function BudgetTracker() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Budget Tracker</h2>
-        <p className="text-muted-foreground">Keep track of your travel expenses</p>
+        <h2 className="text-xl sm:text-2xl font-bold">Budget Tracker</h2>
+        <p className="text-muted-foreground text-sm sm:text-base">Keep track of your travel expenses</p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card className="md:col-span-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <Card className="col-span-1 md:col-span-2">
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <CardTitle>Trip Budget</CardTitle>
               <div className="flex items-center gap-2">
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -114,25 +114,24 @@ export default function BudgetTracker() {
               </TabsList>
 
               <TabsContent value="expenses" className="space-y-4 pt-4">
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col gap-4">
                   <Input
                     placeholder="Description"
                     value={newExpense.description}
                     onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
                   />
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <Input
                       type="number"
                       placeholder="Amount"
                       value={newExpense.amount || ""}
                       onChange={(e) => setNewExpense({ ...newExpense, amount: Number(e.target.value) })}
-                      className="w-24"
                     />
                     <Select
                       value={newExpense.category}
                       onValueChange={(value) => setNewExpense({ ...newExpense, category: value as ExpenseCategory })}
                     >
-                      <SelectTrigger className="w-[180px]">
+                      <SelectTrigger>
                         <SelectValue placeholder="Category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -146,20 +145,21 @@ export default function BudgetTracker() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <Input
                       type="date"
                       value={newExpense.date}
                       onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
-                      className="w-32"
                     />
-                    <Button onClick={addExpense}>
+                    <Button onClick={addExpense} className="w-full">
                       <Plus className="h-4 w-4 mr-2" />
-                      Add
+                      Add Expense
                     </Button>
                   </div>
                 </div>
 
-                <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+                <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 pt-2">
                   <AnimatePresence>
                     {expenses.map((expense) => (
                       <motion.div
@@ -169,23 +169,23 @@ export default function BudgetTracker() {
                         exit={{ opacity: 0, x: -100 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div className="text-2xl">{categoryIcons[expense.category]}</div>
+                        <div className="flex items-center justify-between p-2 sm:p-3 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2 sm:gap-3">
+                            <div className="text-xl sm:text-2xl">{categoryIcons[expense.category]}</div>
                             <div>
-                              <p className="font-medium">{expense.description}</p>
+                              <p className="font-medium text-sm sm:text-base truncate max-w-[120px] sm:max-w-[200px]">{expense.description}</p>
                               <p className="text-xs text-muted-foreground">{expense.date}</p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <p className="font-bold">${expense.amount.toFixed(2)}</p>
+                          <div className="flex items-center gap-2 sm:gap-3">
+                            <p className="font-bold text-sm sm:text-base">${expense.amount.toFixed(2)}</p>
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => removeExpense(expense.id)}
-                              className="h-8 w-8 rounded-full text-muted-foreground hover:text-red-500"
+                              className="h-7 w-7 sm:h-8 sm:w-8 rounded-full text-muted-foreground hover:text-red-500"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                             </Button>
                           </div>
                         </div>
@@ -267,35 +267,35 @@ export default function BudgetTracker() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="col-span-1">
           <CardHeader>
-            <CardTitle>Budget Summary</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">Budget Summary</CardTitle>
             <CardDescription>Your financial overview</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6">
             <div className="text-center space-y-1">
               <p className="text-sm text-muted-foreground">Total Budget</p>
-              <p className="text-3xl font-bold">${budget.toFixed(2)}</p>
+              <p className="text-2xl sm:text-3xl font-bold">${budget.toFixed(2)}</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-muted p-4 rounded-lg text-center">
-                <p className="text-sm text-muted-foreground">Spent</p>
-                <p className="text-xl font-bold">${totalExpenses.toFixed(2)}</p>
+            <div className="grid grid-cols-2 gap-2 sm:gap-4">
+              <div className="bg-muted p-2 sm:p-4 rounded-lg text-center">
+                <p className="text-xs sm:text-sm text-muted-foreground">Spent</p>
+                <p className="text-lg sm:text-xl font-bold">${totalExpenses.toFixed(2)}</p>
                 <p className="text-xs text-muted-foreground">{budgetPercentage.toFixed(0)}% of budget</p>
               </div>
-              <div className="bg-muted p-4 rounded-lg text-center">
-                <p className="text-sm text-muted-foreground">Remaining</p>
-                <p className={`text-xl font-bold ${remainingBudget < 0 ? "text-red-500" : "text-green-500"}`}>
+              <div className="bg-muted p-2 sm:p-4 rounded-lg text-center">
+                <p className="text-xs sm:text-sm text-muted-foreground">Remaining</p>
+                <p className={`text-lg sm:text-xl font-bold ${remainingBudget < 0 ? "text-red-500" : "text-green-500"}`}>
                   ${remainingBudget.toFixed(2)}
                 </p>
                 <p className="text-xs text-muted-foreground">{(100 - budgetPercentage).toFixed(0)}% of budget</p>
               </div>
             </div>
 
-            <div className="pt-4">
-              <h4 className="font-medium text-sm mb-3">Top Expenses</h4>
-              <div className="space-y-2">
+            <div className="pt-2 sm:pt-4">
+              <h4 className="font-medium text-sm mb-2 sm:mb-3">Top Expenses</h4>
+              <div className="space-y-1 sm:space-y-2">
                 {expenses
                   .sort((a, b) => b.amount - a.amount)
                   .slice(0, 3)
@@ -303,9 +303,11 @@ export default function BudgetTracker() {
                     <div key={expense.id} className="flex justify-between items-center p-2 rounded-lg hover:bg-muted">
                       <div className="flex items-center gap-2">
                         <span>{categoryIcons[expense.category]}</span>
-                        <span className="font-medium text-sm">{expense.description}</span>
+                        <span className="font-medium text-xs sm:text-sm truncate max-w-[100px] sm:max-w-full">
+                          {expense.description}
+                        </span>
                       </div>
-                      <span className="font-bold">${expense.amount.toFixed(2)}</span>
+                      <span className="font-bold text-xs sm:text-sm">${expense.amount.toFixed(2)}</span>
                     </div>
                   ))}
 
